@@ -7,7 +7,7 @@
 using namespace std;
 
 const double SIMULATION_TIME = 1000.0; // simulation duration in hours
-const int SIMULATIONS = 1000;          // number of simulation runs
+const int SIMULATIONS = 1;          // number of simulation runs
 
 // Structure for storing customer details
 struct Customer {

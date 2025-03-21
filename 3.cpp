@@ -7,7 +7,7 @@
 using namespace std;
 
 const int ARRIVALS = 500;    // number of customer arrivals to simulate
-const int SIMULATIONS = 1000; // number of simulation runs
+const int SIMULATIONS = 1; // number of simulation runs
 
 // Structure for storing customer details
 struct Customer {
