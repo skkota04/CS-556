@@ -1,8 +1,8 @@
-#Queue Simulation Project
+# Queue Simulation Project
 
 This repository contains three Java simulation programs that model different queueing systems using discrete-event simulation techniques. Each simulation explores various operational scenarios and collects performance metrics to help analyze system behavior under different conditions.
 
-##Overview of Simulations
+## Overview of Simulations
 
 1. **Q1: Queue Simulation with Changing Servers**  
    Models a multi-server queue where the number of active servers changes during the simulation. This program collects performance metrics for three time periods as well as for the entire simulation duration.
