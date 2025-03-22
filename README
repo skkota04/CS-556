@@ -1,0 +1,40 @@
+# CS-556 Queueing Simulations
+
+This repository contains Java implementations for various queueing system simulations. Each simulation explores different aspects of system performance under varied conditions.
+
+## Java Simulation Files
+
+- **[Q3.java]**  
+  Implements a coffee shop simulation that processes 500 customer arrivals over 1000 simulation runs. It calculates metrics such as:
+  - Average waiting time
+  - Average system time
+  - Utilization factor and idle time fraction
+  - Average queue length and maximum queue length  
+  Additionally, it compares the simulation outcomes with theoretical values.
+
+- **[Q2.java]**  
+  Conducts a capacity analysis where the system has a finite capacity. Over 1000 simulation runs and a fixed simulation time, it evaluates:
+  - Average waiting time and system time
+  - Utilization rate
+  - Average queue length
+  - Probability of the system being full
+  - Rejection probability when capacity is reached
+
+- **[Q1.java]**  
+  Simulates a system with a varying number of active servers during different periods of the day:
+  - 0-2 hours: 2 servers
+  - 2-5 hours: 4 servers
+  - 5-8 hours: 3 servers  
+  It computes period-specific performance metrics including:
+  - Average waiting time and system time
+  - Server utilization
+  - Average queue length
+  - Probability that all servers are busy
+
+## How to Compile and Run
+
+1. **Compile:**  
+   Use the following command in your terminal:
+   ```sh
+   javac Q1.java Q2.java Q3.java
+2. 
