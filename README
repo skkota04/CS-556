@@ -1,12 +1,6 @@
-Below is a combined README that now documents all three simulation programs—Q1, Q2, and Q3—in a single file.
-
----
-
 # Queue Simulation Project
 
 This repository contains three Java simulation programs that model different queueing systems using discrete-event simulation techniques. Each simulation explores various operational scenarios and collects performance metrics to help analyze system behavior under different conditions.
-
----
 
 ## Overview of Simulations
 
@@ -19,7 +13,7 @@ This repository contains three Java simulation programs that model different que
 3. **Q3: Coffee Shop Simulation**  
    Simulates a single-server queue (representing a coffee shop) where exactly 500 customer arrivals are processed per run. The simulation runs for 1000 independent runs to average performance metrics, and it compares simulated results with theoretical values.
 
----
+
 
 ## Detailed Descriptions
 
@@ -29,11 +23,11 @@ This repository contains three Java simulation programs that model different que
 Analyze how dynamic server allocation impacts system performance.
 
 **Key Features:**
-- **Dynamic Server Allocation:**  
-  - **0–2 hours:** 2 servers  
-  - **2–5 hours:** 4 servers  
-  - **5–8 hours:** 3 servers  
-- **Metrics Collected:**  
+  **Dynamic Server Allocation:**  
+    **0-2 hours:** 2 servers  
+    **2-5 hours:** 4 servers  
+    **5-8 hours:** 3 servers  
+  **Metrics Collected:**  
   - Average waiting time  
   - Average system time (waiting time + service time)  
   - Server utilization  
@@ -61,9 +55,9 @@ Examine the impact of a finite system capacity on queue performance and customer
 **Key Features:**
 - **Finite Capacity:**  
   Customers are rejected if they arrive when the queue is at capacity.
-- **Multiple Simulation Runs:**  
+ **Multiple Simulation Runs:**  
   Each simulation run represents 1000 hours, and 1000 runs are averaged to obtain robust metrics.
-- **Metrics Collected:**  
+  **Metrics Collected:**  
   - Average waiting time  
   - Average system time  
   - Utilization rate  
@@ -128,14 +122,14 @@ java Q3
 
 You can modify simulation parameters such as arrival rates (λ), service rates (μ), server capacities, and the number of simulation runs directly in the source code files. These parameters are specified in the `main` methods or as constants at the top of each file.
 
----
+
 
 ## Understanding the Output
 
 ### Q1 Output:
-- **Period-Specific Metrics:**  
-  Detailed tables for each time period (0–2, 2–5, 5–8 hours) that include average wait time, system time, utilization, average queue length, and probability that all servers are busy.
-- **Entire Day Metrics:**  
+  **Period-Specific Metrics:**  
+  Detailed tables for each time period (0-2, 2-5, 5-8 hours) that include average wait time, system time, utilization, average queue length, and probability that all servers are busy.
+  **Entire Day Metrics:**  
   Aggregated results for the full simulation period.
 
 ### Q2 Output:
@@ -148,7 +142,7 @@ You can modify simulation parameters such as arrival rates (λ), service rates (
 - **Theoretical Values:**  
   A comparison of the simulated results against the theoretical values derived for an M/M/1 queue.
 
----
+
 
 ## Conclusion
 
@@ -159,4 +153,3 @@ This project offers three different simulation models to study various queueing 
 
 Feel free to experiment with the parameters to observe how different configurations impact system performance. Enjoy exploring and analyzing these queueing models!
 
----
