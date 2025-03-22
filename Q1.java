@@ -3,7 +3,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
-public class Q2 {
+public class Q1 {
     private static final double SIMULATION_TIME = 8.0; // hours
 
     static class Customer {
@@ -92,7 +92,7 @@ public class Q2 {
     private double mu;     // service rate per server
     private int maxServers; // maximum number of servers (used to initialize server array)
 
-    public Q2(double lambda, double mu) {
+    public Q1(double lambda, double mu) {
         this.random = new Random();
         this.lambda = lambda;
         this.mu = mu;
@@ -312,7 +312,7 @@ public class Q2 {
     }
 
     public static void analyzeServerEffect(double lambda, double mu) {
-        Q2 simulation = new Q2(lambda, mu);
+        Q1 simulation = new Q1(lambda, mu);
         simulation.runSimulation();
     }
 
