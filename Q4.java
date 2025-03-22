@@ -3,9 +3,10 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
-public class Q3 {
+public class Q4 {
     private static final int ARRIVALS = 500; // number of customer arrivals to simulate
     private static final int SIMULATIONS = 1; // number of simulation runs
+    private static final double MAX_WAIT_TIME = 5.0 / 60.0; // 5 minutes in hours
 
     // Class for storing customer details
     static class Customer {
@@ -13,9 +14,11 @@ public class Q3 {
         double serviceStartTime;
         double serviceTime;
         double departureTime;
+        boolean served;
 
         Customer(double arrivalTime) {
             this.arrivalTime = arrivalTime;
+            this.served = false;
         }
     }
 
@@ -28,20 +31,19 @@ public class Q3 {
         double avgQueueLength;
         int maxQueueLength;
         double emptyQueueProbability;
+        int customersLost; // Added to track customers who left due to long wait
     }
 
     private Random random;
     private double lambda; // arrival rate
     private double mu;    // service rate
 
-    // Constructor to initialize parameters
-    public Q3(double lambda, double mu) {
+    public Q4(double lambda, double mu) {
         this.random = new Random();
         this.lambda = lambda;
         this.mu = mu;
     }
 
-    // Generate exponential random variable
     private double getExponential(double rate) {
         return -Math.log(1.0 - random.nextDouble()) / rate;
     }
@@ -59,15 +61,13 @@ public class Q3 {
         double lastEventTime = 0.0;
         int totalArrivals = 0;
         int maxQueueLength = 0;
+        int customersLost = 0;
 
-        // Process arrivals until 500 customers have arrived
         while (totalArrivals < ARRIVALS) {
-            // Handle arrival
             if (nextArrival < nextDeparture) {
                 currentTime = nextArrival;
                 totalArrivals++;
 
-                // Update queue length time product and empty queue time
                 queueLengthTimeProduct += queue.size() * (currentTime - lastEventTime);
                 if (queue.isEmpty()) {
                     emptyQueueTime += (currentTime - lastEventTime);
@@ -75,42 +75,53 @@ public class Q3 {
 
                 Customer customer = new Customer(currentTime);
                 queue.add(customer);
-
-                // Update maximum queue length
                 maxQueueLength = Math.max(maxQueueLength, queue.size());
 
-                // If this is the only customer, start service
                 if (queue.size() == 1) {
-                    customer.serviceStartTime = currentTime;
-                    customer.serviceTime = getExponential(mu);
-                    customer.departureTime = currentTime + customer.serviceTime;
-                    nextDeparture = customer.departureTime;
+                    if (currentTime - customer.arrivalTime <= MAX_WAIT_TIME) {
+                        customer.serviceStartTime = currentTime;
+                        customer.serviceTime = getExponential(mu);
+                        customer.departureTime = currentTime + customer.serviceTime;
+                        customer.served = true;
+                        nextDeparture = customer.departureTime;
+                    } else {
+                        // Customer leaves due to excessive wait
+                        queue.poll();
+                        customersLost++;
+                    }
                 }
 
                 nextArrival = currentTime + getExponential(lambda);
                 lastEventTime = currentTime;
-            }
-            // Handle departure
-            else {
+            } else {
                 currentTime = nextDeparture;
 
-                // Update queue length time product and empty queue time
                 queueLengthTimeProduct += queue.size() * (currentTime - lastEventTime);
                 if (queue.isEmpty()) {
                     emptyQueueTime += (currentTime - lastEventTime);
                 }
 
-                Customer served = queue.poll();
-                completedCustomers.add(served);
-                busyTime += served.serviceTime;
+                Customer served = queue.peek();
+                if (served.served) {
+                    queue.poll();
+                    completedCustomers.add(served);
+                    busyTime += served.serviceTime;
+                }
 
-                // If there are more customers, start serving next
                 if (!queue.isEmpty()) {
                     Customer nextCustomer = queue.peek();
-                    nextCustomer.serviceStartTime = currentTime;
-                    nextCustomer.serviceTime = getExponential(mu);
-                    nextCustomer.departureTime = currentTime + nextCustomer.serviceTime;
-                    nextDeparture = nextCustomer.departureTime;
+                    if (currentTime - nextCustomer.arrivalTime <= MAX_WAIT_TIME) {
+                        nextCustomer.serviceStartTime = currentTime;
+                        nextCustomer.serviceTime = getExponential(mu);
+                        nextCustomer.departureTime = currentTime + nextCustomer.serviceTime;
+                        nextCustomer.served = true;
+                        nextDeparture = nextCustomer.departureTime;
+                    } else {
+                        // Customer leaves due to excessive wait
+                        queue.poll();
+                        customersLost++;
+                        nextDeparture = queue.isEmpty() ? Double.MAX_VALUE : currentTime;
+                    }
                 } else {
                     nextDeparture = Double.MAX_VALUE;
                 }
@@ -118,36 +129,41 @@ public class Q3 {
             }
         }
 
-        // Process remaining customers in the queue
         while (!queue.isEmpty()) {
             currentTime = nextDeparture;
 
-            // Update queue length time product and empty queue time
             queueLengthTimeProduct += queue.size() * (currentTime - lastEventTime);
             if (queue.isEmpty()) {
                 emptyQueueTime += (currentTime - lastEventTime);
             }
 
-            Customer served = queue.poll();
-            completedCustomers.add(served);
-            busyTime += served.serviceTime;
+            Customer served = queue.peek();
+            if (served.served) {
+                queue.poll();
+                completedCustomers.add(served);
+                busyTime += served.serviceTime;
+            }
 
             if (!queue.isEmpty()) {
                 Customer nextCustomer = queue.peek();
-                nextCustomer.serviceStartTime = currentTime;
-                nextCustomer.serviceTime = getExponential(mu);
-                nextCustomer.departureTime = currentTime + nextCustomer.serviceTime;
-                nextDeparture = nextCustomer.departureTime;
+                if (currentTime - nextCustomer.arrivalTime <= MAX_WAIT_TIME) {
+                    nextCustomer.serviceStartTime = currentTime;
+                    nextCustomer.serviceTime = getExponential(mu);
+                    nextCustomer.departureTime = currentTime + nextCustomer.serviceTime;
+                    nextCustomer.served = true;
+                    nextDeparture = nextCustomer.departureTime;
+                } else {
+                    queue.poll();
+                    customersLost++;
+                    nextDeparture = queue.isEmpty() ? Double.MAX_VALUE : currentTime;
+                }
             } else {
                 nextDeparture = Double.MAX_VALUE;
             }
             lastEventTime = currentTime;
         }
 
-        // Calculate total simulation time (time until last customer departs)
         double totalSimulationTime = currentTime;
-
-        // Calculate performance measures
         SimulationResults results = new SimulationResults();
         double totalWaitingTime = 0.0;
         double totalSystemTime = 0.0;
@@ -156,13 +172,14 @@ public class Q3 {
             totalSystemTime += (c.departureTime - c.arrivalTime);
         }
 
-        results.avgWaitingTime = totalWaitingTime / completedCustomers.size();
-        results.avgSystemTime = totalSystemTime / completedCustomers.size();
+        results.avgWaitingTime = completedCustomers.isEmpty() ? 0 : totalWaitingTime / completedCustomers.size();
+        results.avgSystemTime = completedCustomers.isEmpty() ? 0 : totalSystemTime / completedCustomers.size();
         results.utilizationFactor = busyTime / totalSimulationTime;
         results.idleTimeFraction = 1.0 - results.utilizationFactor;
         results.avgQueueLength = queueLengthTimeProduct / totalSimulationTime;
         results.maxQueueLength = maxQueueLength;
         results.emptyQueueProbability = emptyQueueTime / totalSimulationTime;
+        results.customersLost = customersLost;
 
         return results;
     }
@@ -180,30 +197,31 @@ public class Q3 {
             avgResults.avgQueueLength += results.avgQueueLength;
             avgResults.maxQueueLength = Math.max(avgResults.maxQueueLength, results.maxQueueLength);
             avgResults.emptyQueueProbability += results.emptyQueueProbability;
+            avgResults.customersLost += results.customersLost;
             validSimulations++;
         }
 
-        // Average the results
         avgResults.avgWaitingTime /= validSimulations;
         avgResults.avgSystemTime /= validSimulations;
         avgResults.utilizationFactor /= validSimulations;
         avgResults.idleTimeFraction /= validSimulations;
         avgResults.avgQueueLength /= validSimulations;
         avgResults.emptyQueueProbability /= validSimulations;
+        avgResults.customersLost /= validSimulations;
 
         return avgResults;
     }
 
     public static void runSimulationAnalysis(double lambda, double mu) {
-        
+        System.out.println("\nCoffee Shop Simulation Results (Averaged over " + SIMULATIONS + " runs):");
         System.out.println("--------------------------------------------------");
-        System.out.printf("%-25s %-15s %-15s %-15s %-15s %-15s %-15s\n",
-                "Metric", "Avg Wait Time", "Avg Sys Time", "Utilization", "Idle Fraction", "Avg Queue Len", "Max Queue Len", "P(Empty Queue)");
+        System.out.printf("%-25s %-15s %-15s %-15s %-15s %-15s %-15s %-15s\n",
+                "Metric", "Avg Wait Time", "Avg Sys Time", "Utilization", "Idle Fraction", "Avg Queue Len", "Max Queue Len", "P(Empty Queue)", "Cust Lost");
 
-        Q3 simulation = new Q3(lambda, mu);
+        Q4 simulation = new Q4(lambda, mu);
         SimulationResults results = simulation.runMultipleSimulations();
 
-        System.out.printf("%-25s %-15.6f %-15.6f %-15.6f %-15.6f %-15.6f %-15d %-15.6f\n",
+        System.out.printf("%-25s %-15.6f %-15.6f %-15.6f %-15.6f %-15.6f %-15d %-15.6f %-15d\n",
                 "Simulation Results",
                 results.avgWaitingTime,
                 results.avgSystemTime,
@@ -211,18 +229,18 @@ public class Q3 {
                 results.idleTimeFraction,
                 results.avgQueueLength,
                 results.maxQueueLength,
-                results.emptyQueueProbability);
+                results.emptyQueueProbability,
+                results.customersLost);
 
-        // Theoretical values for comparison
+        // double rho = lambda / mu;
+        // double Lq = (lambda * lambda) / (mu * (mu - lambda));
+        // double Wq = Lq / lambda;
+        // double W = Wq + (1.0 / mu);
+        // double P0 = 1.0 - rho;
+
         // System.out.println("\nTheoretical Values (for comparison):");
         // System.out.println("--------------------------------------------------");
-        // double rho = lambda / mu;
-        // double Lq = (lambda * lambda) / (mu * (mu - lambda)); // Average number in queue
-        // double Wq = Lq / lambda; // Average waiting time in queue
-        // double W = Wq + (1.0 / mu); // Average time in system
-        // double P0 = 1.0 - rho; // Probability of empty system
-
-        // System.out.printf("%-25s %-15.6f %-15.6f %-15.6f %-15.6f %-15.6f %-15s %-15.6f\n",
+        // System.out.printf("%-25s %-15.6f %-15.6f %-15.6f %-15.6f %-15.6f %-15s %-15.6f %-15s\n",
         //         "Theoretical Values",
         //         Wq,
         //         W,
@@ -230,18 +248,13 @@ public class Q3 {
         //         1.0 - rho,
         //         Lq,
         //         "N/A",
-        //         P0);
+        //         P0,
+        //         "N/A");
     }
 
     public static void main(String[] args) {
         double lambda = 10.0; // customers per hour
         double mu = 15.0;     // customers per hour
-        System.out.println("\nCoffee Shop Simulation Results (Averaged over " + SIMULATIONS + " runs):\n");
-        System.out.println("lambda == 10 && mu == 15");
         runSimulationAnalysis(lambda, mu);
-        System.out.println("lambda == 10 && mu == 12");
-        runSimulationAnalysis(lambda, 12.0);
-        System.out.println("lambda == 10 && mu == 20");
-        runSimulationAnalysis(lambda, 20.0);
     }
 }
